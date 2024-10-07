@@ -6,8 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\Event;
 use App\Models\Ticket;
 use App\Models\Sale;
-use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\DB;
 
 class TicketSeeder extends Seeder
 {
@@ -28,13 +28,15 @@ class TicketSeeder extends Seeder
 
         $events = Event::all();
 
+        // Asignar tickets al primer evento
         $firstEvent = $events->first();
+        $totalTicketsForFirstEvent = 0;
+
         if ($firstEvent) {
             for ($i = 0; $i < 10; $i++) {
                 $customer = $customers[$i % count($customers)];
 
                 $qrCode = QrCode::format('png')->size(200)->generate("http://localhost:5173/evento/{$firstEvent->id}/ticket/{$i}");
-
                 $qrCodePath = "qrcodes/{$firstEvent->id}_ticket_{$i}.png";
                 \Storage::disk('public')->put($qrCodePath, $qrCode);
 
@@ -51,15 +53,25 @@ class TicketSeeder extends Seeder
                     'ticket_id' => $ticket->id,
                     'event_id' => $firstEvent->id,
                 ]);
+
+                // Contar los tickets para este evento
+                $totalTicketsForFirstEvent++;
             }
+
+            // Actualizar los tickets disponibles en el primer evento
+            $firstEvent->update([
+                'available_tickets' => max(0, 10 - $totalTicketsForFirstEvent)
+            ]);
         }
 
+        // Asignar tickets a otros eventos
         foreach ($events->skip(1) as $event) {
+            $totalTicketsForEvent = 0;
+
             for ($i = 0; $i < 3; $i++) {
                 $customer = $customers[$i % count($customers)];
 
                 $qrCode = QrCode::format('png')->size(200)->generate("http://localhost:5173/evento/{$event->id}/ticket/{$i}");
-
                 $qrCodePath = "qrcodes/{$event->id}_ticket_{$i}.png";
                 \Storage::disk('public')->put($qrCodePath, $qrCode);
 
@@ -71,11 +83,20 @@ class TicketSeeder extends Seeder
                     'qr_code' => $qrCodePath,
                 ]);
 
+                // Registrar una venta
                 Sale::create([
                     'ticket_id' => $ticket->id,
                     'event_id' => $event->id,
                 ]);
+
+                // Contar los tickets para este evento
+                $totalTicketsForEvent++;
             }
+
+            // Actualizar los tickets disponibles en el evento
+            $event->update([
+                'available_tickets' => max(0, 10 - $totalTicketsForEvent) // Asegurar que no sea negativo
+            ]);
         }
     }
 }

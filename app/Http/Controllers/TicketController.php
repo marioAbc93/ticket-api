@@ -77,10 +77,13 @@ class TicketController extends Controller
                     throw new \Exception('No hay más tickets disponibles para este evento.');
                 }
 
-                $qrCode = QrCode::format('png')->size(200)->generate("http://localhost:5173/evento/{$event->id}/ticket/{$soldTicketsCount + 1}");
+                $ticketNumber = $soldTicketsCount + 1;
+                $qrCode = QrCode::format('png')->size(200)->generate("http://localhost:5173/evento/{$event->id}/ticket/{$ticketNumber}");
 
-                $qrCodePath = "qrcodes/{$event->id}_ticket_{$soldTicketsCount + 1}.png";
+               $qrCodePath = "qrcodes/{$event->id}_ticket_{$ticketNumber}.png";
+
                 \Storage::disk('public')->put($qrCodePath, $qrCode);
+
 
                 $ticket = Ticket::create([
                     'name' => $validated['name'],

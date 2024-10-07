@@ -16,3 +16,4 @@ Route::post('ticket', [TicketController::class, 'buyTicket']);
 Route::get('events',  [EventController::class, 'index']);
 Route::get('event/{show}',  [EventController::class, 'show']);
 Route::get('events-name',  [EventController::class, 'getEventNames']);
+Route::get('events/summary',  [EventController::class, 'getEventSummary']);

@@ -14,27 +14,9 @@ class EventController extends Controller
         try {
             $events = Event::paginate(10);
 
-            $eventData = $events->map(function ($event) {
-
-                $totalTickets = Ticket::where('event_id', $event->id)->count();
-
-                $soldTickets = Sale::where('event_id', $event->id)->count();
-
-                $availableTickets = $totalTickets - $soldTickets;
-
-                return [
-                    'id' => $event->id,
-                    'name' => $event->name,
-                    'description' => $event->description,
-                    'date' => $event->date,
-                    'ticket_value' => $event->ticket_value,
-                    'available_tickets' => $availableTickets,
-                ];
-            });
-
             return response()->json([
                 'message' => 'Lista de eventos obtenida correctamente',
-                'events' => $eventData,
+                'events' => $events->items(),
                 'total_pages' => $events->lastPage(),
                 'total_events' => $events->total(),
                 'current_page' => $events->currentPage(),
@@ -47,21 +29,59 @@ class EventController extends Controller
         }
     }
 
-    public function getEventNames()
+    public function getAll()
     {
         try {
-            $events = Event::whereHas('tickets', function ($query) {
-                $query->doesntHave('sale');
-            })
-            ->select('name')
-            ->paginate(10);
+            $events = Event::all();
 
             return response()->json([
                 'message' => 'Lista de eventos obtenida correctamente',
                 'events' => $events,
-                'total_pages' => $events->lastPage(),
-                'total_events' => $events->total(),
-                'current_page' => $events->currentPage(),
+            ], 200);
+        } catch (Exception $exc) {
+            return response()->json([
+                'message' => 'Error al recuperar eventos',
+            ])
+        }
+    }
+
+    public function getEventSummary()
+    {
+        try {
+            $allEvents = Event::count();
+
+            $availableEvents = Event::where('available_tickets', ">", 0)->count();
+
+            $soldoutEvents = Event::where('available_tickets', "=", 0)->count();
+
+            $eventsWithAvailableTickets = Event::where('available_tickets', '>', 0)
+                ->get(['id', 'name', 'available_tickets']);
+
+            return response()->json([
+                'message' => 'Lista de eventos obtenida correctamente',
+                'total_events' => $allEvents,
+                'available_events' => $availableEvents,
+                'soldout_events' => $soldoutEvents,
+                'events_with_available_tickets' => $eventsWithAvailableTickets,
+            ], 200);
+        } catch (Exception $exc) {
+            return response()->json([
+                'message' => 'Error al recuperar eventos',
+                'error' => $exc->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function getEventNames()
+    {
+        try {
+            $events = Event::where('available_tickets', ">", 0)
+            ->select('id', 'name', 'ticket_value')->get();
+
+            return response()->json([
+                'message' => 'Lista de eventos obtenida correctamente',
+                'events' => $events,
             ], 200);
         } catch (Exception $exc) {
             return response()->json([
