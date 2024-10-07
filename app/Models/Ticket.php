@@ -24,6 +24,7 @@ class Ticket extends Model
         return $this->belongsTo(Event::class);
     }
 
+
     public function sale()
     {
         return $this->hasOne(Sale::class);

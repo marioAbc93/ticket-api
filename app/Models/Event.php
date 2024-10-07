@@ -18,7 +18,7 @@ class Event extends Model
         'ticket_value',
         'available_tickets',
     ];
-
+    protected $hidden = ['created_at', 'updated_at'];
     public function tickets()
     {
         return $this->hasMany(Ticket::class);

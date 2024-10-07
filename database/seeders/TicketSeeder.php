@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Event;
 use App\Models\Ticket;
+use App\Models\Sale;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -37,12 +38,18 @@ class TicketSeeder extends Seeder
                 $qrCodePath = "qrcodes/{$firstEvent->id}_ticket_{$i}.png";
                 \Storage::disk('public')->put($qrCodePath, $qrCode);
 
-                Ticket::create([
+                $ticket = Ticket::create([
                     'name' => $customer['name'],
                     'last_name' => $customer['last_name'],
                     'customer_mail' => $customer['customer_mail'],
                     'event_id' => $firstEvent->id,
                     'qr_code' => $qrCodePath,
+                ]);
+
+                // Registrar una venta
+                Sale::create([
+                    'ticket_id' => $ticket->id,
+                    'event_id' => $firstEvent->id,
                 ]);
             }
         }
@@ -56,12 +63,17 @@ class TicketSeeder extends Seeder
                 $qrCodePath = "qrcodes/{$event->id}_ticket_{$i}.png";
                 \Storage::disk('public')->put($qrCodePath, $qrCode);
 
-                Ticket::create([
+                $ticket = Ticket::create([
                     'name' => $customer['name'],
                     'last_name' => $customer['last_name'],
                     'customer_mail' => $customer['customer_mail'],
                     'event_id' => $event->id,
                     'qr_code' => $qrCodePath,
+                ]);
+
+                Sale::create([
+                    'ticket_id' => $ticket->id,
+                    'event_id' => $event->id,
                 ]);
             }
         }
