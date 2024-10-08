@@ -17,6 +17,7 @@ class Ticket extends Model
         'customer_mail',
         'event_id',
         'qr_code',
+        'payment_method',
     ];
 
     public function event()

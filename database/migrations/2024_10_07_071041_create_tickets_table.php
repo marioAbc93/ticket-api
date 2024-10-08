@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('last_name');
             $table->string('customer_mail');
+            $table->string('payment_method');
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->string('qr_code')->nullable();
             $table->timestamps();

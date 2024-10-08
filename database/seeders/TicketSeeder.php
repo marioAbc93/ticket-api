@@ -28,7 +28,6 @@ class TicketSeeder extends Seeder
 
         $events = Event::all();
 
-        // Asignar tickets al primer evento
         $firstEvent = $events->first();
         $totalTicketsForFirstEvent = 0;
 
@@ -46,25 +45,22 @@ class TicketSeeder extends Seeder
                     'customer_mail' => $customer['customer_mail'],
                     'event_id' => $firstEvent->id,
                     'qr_code' => $qrCodePath,
+                    'payment_method' => "cash",
                 ]);
 
-                // Registrar una venta
                 Sale::create([
                     'ticket_id' => $ticket->id,
                     'event_id' => $firstEvent->id,
                 ]);
 
-                // Contar los tickets para este evento
                 $totalTicketsForFirstEvent++;
             }
 
-            // Actualizar los tickets disponibles en el primer evento
             $firstEvent->update([
                 'available_tickets' => max(0, 10 - $totalTicketsForFirstEvent)
             ]);
         }
 
-        // Asignar tickets a otros eventos
         foreach ($events->skip(1) as $event) {
             $totalTicketsForEvent = 0;
 
@@ -81,21 +77,19 @@ class TicketSeeder extends Seeder
                     'customer_mail' => $customer['customer_mail'],
                     'event_id' => $event->id,
                     'qr_code' => $qrCodePath,
+                    'payment_method' => "cash",
                 ]);
 
-                // Registrar una venta
                 Sale::create([
                     'ticket_id' => $ticket->id,
                     'event_id' => $event->id,
                 ]);
 
-                // Contar los tickets para este evento
                 $totalTicketsForEvent++;
             }
 
-            // Actualizar los tickets disponibles en el evento
             $event->update([
-                'available_tickets' => max(0, 10 - $totalTicketsForEvent) // Asegurar que no sea negativo
+                'available_tickets' => max(0, 10 - $totalTicketsForEvent)
             ]);
         }
     }

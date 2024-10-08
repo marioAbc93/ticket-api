@@ -41,7 +41,7 @@ class EventController extends Controller
         } catch (Exception $exc) {
             return response()->json([
                 'message' => 'Error al recuperar eventos',
-            ])
+            ],500);
         }
     }
 
@@ -105,6 +105,28 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $event = Event::findOrFail($id);
+
+            $event->update($request->all());
+
+            return response()->json(['message' => 'Evento actualizado exitosamente', 'event' => $event], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Evento no encontrado',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (Exception $exc) {
+            return response()->json([
+                'message' => 'Error al actualizar el evento',
+                'error' => $exc->getMessage(),
+            ], 500);
+        }
+    }
+
 
     public function show($id)
     {
