@@ -61,7 +61,7 @@ class TicketControllerTest extends TestCase
         ];
 
         $response = $this->postJson("/api/events/{$event->id}/buy", $data);
-        //dd($response->json());
+
         $response->assertStatus(200)
                  ->assertJson([
                     'message' => 'Compra de ticket realizada con éxito',
